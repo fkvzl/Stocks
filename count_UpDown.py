@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 import pymysql
 from sqlalchemy import create_engine
-
+from django.db import IntegrityError
  
     
 
@@ -43,15 +43,23 @@ def get_allstocks():
     data = pd.read_excel('D:/stock/StocksInfo.xlsx')
     return data
 
-def down_stockdata(ts_code,start,end):  #遍历每个股票代码
+def down_stdailys(code,start,end):  #遍历每个股票代码
     df = pro.daily(ts_code=code,start_date=start,end_date=end)#遍历每天行情
-    df.to_sql('stdaily', engine,index=False,if_exists='replace')
-        
+    
+    
+    
     if df.empty:
-        print(f'股票:{ts_code}无记录')
+        print(f'股票:{code}无记录')
     else:
-        df.to_excel(f'D:/stock/{ts_code}.xlsx')
-        print(f'股票:{ts_code}下载完成')
+        try:
+            df.to_sql('stdaily', engine,index=False,if_exists='append')
+            
+        except:
+            print(f"{df['code']}导入失败")
+            pass
+        else:
+            df.to_excel(f'D:/stock/{code}.xlsx')
+            print(f'股票:{code}下载完成')
     
     
 #######################################以上为函数调用###################################
@@ -67,21 +75,19 @@ user='stock'
 pwd='stock'
 db='stockdb'
 
-st_date=20210301
-ed_date=20210302
+st_date=20000101
+ed_date=20210310
 
-engine=create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
+engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
 # conn = pymysql.connect(host=ip,user=user,password=pwd,database=db,charset='utf8')
 # cursor = conn.cursor()
 # cursor.execute(sql)
 
-# for code in get_allstocks()['ts_code']:
-#     down_stockdata(code,st_date,ed_date)
-#     ''
-        
- 
-df = pro.daily(ts_code='600023.SH' ,start_date=st_date,end_date=ed_date)
+for code in get_allstocks()['ts_code']:
+    down_stdailys(code,st_date,ed_date)
+    
+
 
 
         
