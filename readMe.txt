@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS stdaily(
 
 --安装ta-lib，官网只有32位，https://www.lfd.uci.edu/~gohlke/pythonlibs/ 网页上下载64位
 1下载
-2执行pip install TA_Lib-0.4.19-cp37-cp37m-win_amd64     --python版本是37要对应cp版本
+2执行pip install TA_Lib-0.4.19-cp38-cp38-win_amd64.whl    --python版本是38要对应cp版本
 
 
 
