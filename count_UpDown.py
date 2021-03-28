@@ -1,9 +1,7 @@
 import xcsc_tushare as ts
 import pandas as pd 
-import datetime
 import pymysql
 from sqlalchemy import create_engine
-from django.db import IntegrityError
  
     
 
@@ -34,31 +32,31 @@ def db_conn(ip,user,pwd,db,sql):
 #下载所有股票基本信息
 def down_stocks():
     data=pro.stock_basic()
-    data.to_excel('D:/stock/StocksInfo.xlsx')  
+    data.to_excel('D:/StocksInfo.xlsx')  
     return data
 
 
 #获取股票信息
 def get_allstocks():
-    data = pd.read_excel('D:/stock/StocksInfo.xlsx')
+    data = pd.read_excel('D:/StocksInfo.xlsx')
     return data
 
 def down_stdailys(code,start,end):  #遍历每个股票代码
     df = pro.daily(ts_code=code,start_date=start,end_date=end)#遍历每天行情
+    data = pd.read_sql_query(f"select * from stdaily where ts_code='{code}'",con=engine)
+
     
     
-    
-    if df.empty:
-        print(f'股票:{code}无记录')
+    if df.empty or  not data.empty:
+        print(f'股票:{code}无需登记')
     else:
         try:
             df.to_sql('stdaily', engine,index=False,if_exists='append')
             
         except:
-            print(f"{df['code']}导入失败")
             pass
         else:
-            df.to_excel(f'D:/stock/{code}.xlsx')
+            df.to_excel(f'F:/stock/{code}.xlsx')
             print(f'股票:{code}下载完成')
     
     
@@ -83,12 +81,11 @@ engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 # conn = pymysql.connect(host=ip,user=user,password=pwd,database=db,charset='utf8')
 # cursor = conn.cursor()
 # cursor.execute(sql)
-
+#
 for code in get_allstocks()['ts_code']:
     down_stdailys(code,st_date,ed_date)
     
+ 
 
-
-
-        
+#down_stocks()
 

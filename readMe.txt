@@ -7,6 +7,9 @@
  >pip install pymysql
 
 --3创建股票字段表stdaily,change反引号表示特殊
+GRANT ALL ON *.* TO 'stock'@'%';
+
+create database stdaily;
 
 CREATE TABLE IF NOT EXISTS stdaily(
    ts_code VARCHAR(40) NOT NULL,
@@ -35,3 +38,22 @@ CREATE TABLE IF NOT EXISTS stdaily(
 --导入
 
 20210315-完成全股票2021.1月份取数；完成全股票2010.1-2020.12.31取数
+
+--安装ta-lib，官网只有32位，https://www.lfd.uci.edu/~gohlke/pythonlibs/ 网页上下载64位
+1下载
+2执行pip install TA_Lib-0.4.19-cp37-cp37m-win_amd64     --python版本是37要对应cp版本
+
+
+
+【回测平台搭建】
+1账户类
+---策略
+买入触发器
+卖出触发器
+---策略
+2回测函数backtest
+3选股模型集合
+
+
+
+
