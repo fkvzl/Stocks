@@ -37,19 +37,25 @@ def myMACD(price, fastperiod, slowperiod, signalperiod):
 
 #选股
 #hist在1.21开始没跌破0
-#def getLongLow(price,sday,eday):
+#def getLongLow(ts_code):
     #设置开始、截止时间
     #设置下跌幅度
     #筛选发生过满足以上条件的股票，观察走势，比如价格低于17年，macd是红的超过了1个月
     
 
-df = pro.daily(ts_code='002269.SZ')#遍历每天行情
-df=df[::-1]  #倒序，同sort区别为sort为排序方式
 
-#以下两种方式效果一致，talib无前33位，区域需要全周期
-#dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-dif,dea,hist=tl.MACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
+#以下两种方式效果一致
 
+#talib无前33位，hist需要*2
+#dif,dea,hist=tl.MACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
 
-hist = hist*2
-print(hist)
+for stock in pro.stock_basic()['ts_code'].values: #获取全量股票
+    try:
+        df = pro.daily(ts_code=stock)#遍历每天行情
+    except:
+        print('垃圾：',type(stock))
+    df=df[::-1]  #倒序，同sort区别为sort为排序方式
+    dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
+    hist = hist.values[-30:]
+    if (hist>0).sum()==30:
+        print (stock)
