@@ -34,7 +34,10 @@ def myMACD(price, fastperiod, slowperiod, signalperiod):
     bar = (dif-dea)*2 #有些地方的bar = (dif-dea)*2，但是talib中MACD的计算是bar = (dif-dea)*1
     return dif,dea,bar
 
-
+def getLongLow(price,sday,eday):
+    #设置开始、截止时间
+    #设置下跌幅度
+    #筛选发生过满足以上条件的股票，观察走势，比如价格低于17年，macd是红的超过了1个月
 
 df = pro.daily(ts_code='300910.SZ',start_date=20201127,end_date=20210329)#遍历每天行情
 df = df[::-1]
