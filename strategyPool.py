@@ -25,7 +25,12 @@ db='stockdb'
 engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
 
-#指标
+
+
+'''
+1、talib的macd存在前33个null，自用macd已优化
+2、使用时，整体周期取股票从发行以来（涉及递归，不支持取中间某段）
+'''
 def myMACD(price, fastperiod, slowperiod, signalperiod):
     ewma12 = price.ewm(span=fastperiod,adjust=False).mean()
     ewma60 = price.ewm(span=slowperiod,adjust=False).mean()
@@ -34,74 +39,51 @@ def myMACD(price, fastperiod, slowperiod, signalperiod):
     bar = (dif-dea)*2 #有些地方的bar = (dif-dea)*2，但是talib中MACD的计算是bar = (dif-dea)*1
     return dif,dea,bar
 
-<<<<<<< HEAD
 
+
+
+
+'''
+日线kdj
+    1金叉：
+    2死叉：
+60分时kdj
+    3金叉：
+    4死叉：
+'''
 def kdj():
-    #stocks = pro.stock_basic()['ts_code'].values
-    stock='003027.SZ'
-=======
-def kdj():
-    stock='002594.SZ'
+    stock='000157.SZ'
     query_sql='''select * from stdaily where ts_code=$stock'''
     
     df=pd.read_sql_query(query_sql,engine)
     #df.reverse()
     print(df['close'])
     dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
->>>>>>> d41a72d9ffc5b004ce644fa8a77bbc72120423d0
-    
-#选股
-#hist在1.21开始没跌破0
-#def getLongLow(ts_code):
-    #设置开始、截止时间
-    #设置下跌幅度
-    #筛选发生过满足以上条件的股票，观察走势，比如价格低于17年，macd是红的超过了1个月
-    
 
-<<<<<<< HEAD
-def hist(days,d_day,minp):
-    stocklist=[]
-    #talib无前33位，hist需要*2
-    #dif,dea,hist=tl.MACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-    stocks = pro.stock_basic()['ts_code'].values
-  
-    
-    try:
-        for stock in stocks:
-            df = pro.daily(ts_code=stock)#遍历每天行情
-    finally:
-        df=df[::-1]  #倒序，同sort区别为sort为排序方式
-        dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-        hist = hist.values[days:]
-        if ((hist<-1).sum()<d_day and min(hist)<minp):
-            stocklist=stocklist.append(stock);
-            print(stock)
 
-hist(-70,5,-2)
-=======
 
-#def 日线kdj金叉 60分时金叉及远离情况
 
-#以下两种方式效果一致
 
-#talib无前33位，hist需要*2
-#dif,dea,hist=tl.MACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-#hist3个月有0.75天是红的，且实时价格低于3个月之前的价格
+
+
     
     
     
 '''
 1、vr有多次冲高,底部抬高——》意图明显
 '''
-
-"""
-最低kdj
-1创业板
+def vr():
+    
+    
+    
+    
+    
+    
+'''
+1创业板300+零轴up+零轴down+下限
 2满足macd多
 390天最低kdj
-
-"""
-#创业板获取
+'''
 def macdhist_300(days,mind,dday):
     stocks = pro.stock_basic()
     cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
@@ -118,7 +100,4 @@ def macdhist_300(days,mind,dday):
             print('不可用：',stock)
     return stocklist
 
-print(macdhist_300(-90,-2,10))
 
-        
->>>>>>> d41a72d9ffc5b004ce644fa8a77bbc72120423d0
