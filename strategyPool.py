@@ -11,7 +11,7 @@ import pymysql
 import numpy as np
 import matplotlib.pyplot   as plt
 import pandas  as pd
-
+import xlrd
 
 ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
 pro = ts.pro_api(env='prd')
@@ -71,8 +71,9 @@ def kdj():
     
 '''
 1、vr有多次冲高,底部抬高——》意图明显
-'''
 def vr():
+'''
+
     
     
     
@@ -84,7 +85,7 @@ def vr():
 2满足macd多
 390天最低kdj
 '''
-def macdhist_300(days,mind,dday):
+def macdhist_300(days,dday):
     stocks = pro.stock_basic()
     cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
     stocklist=[]
@@ -94,10 +95,23 @@ def macdhist_300(days,mind,dday):
             df=df[::-1]  #倒序，同sort区别为sort为排序方式
             dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
             hist = hist.values[days:]
-            if  (hist>0).sum()>=50 and min(hist)<mind and (hist<-1).sum()<=dday:
+            if  (hist>0).sum()>=30 and   (hist>-0.07 and hist<0.07).sum()>=dday:
                 stocklist.append(stock)
         except:
             print('不可用：',stock)
     return stocklist
 
 
+stocks=pro.stock_basic()
+dfs=pd.read_excel('D:/StocksInfo.xlsx')
+stocks=dfs['ts_code'].values
+cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
+for i in cy_stock['ts_code'].values:
+    df = pro.daily(ts_code=i)
+    df=df[::-1]
+    dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
+    hist = hist.values[-25:]
+    if(len(hist [ (hist >=-0.07) * (hist <= 0.07)]))>=22:
+        print (i)
+# print((hist>-0.7) & (hist<0.7)).sum()
+# if  (hist>0).sum()>=30 and   (hist>-0.07 and hist<0.07).sum()>=10:
