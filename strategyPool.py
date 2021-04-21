@@ -40,7 +40,20 @@ def myMACD(price, fastperiod, slowperiod, signalperiod):
     return dif,dea,bar
 
 
+def myKDJ(low,high,close):
+    low_list = low.rolling(9, min_periods=9).min()
+    low_list.fillna(value = low.expanding().min(), inplace = True)
+    high_list = high.rolling(9, min_periods=9).max()
+    high_list.fillna(value = high.expanding().max(), inplace = True)
+    rsv = (close - low_list) / (high_list - low_list) * 100
 
+    df['K'] = pd.DataFrame(rsv).ewm(com=2).mean()
+    df['D'] = df['K'].ewm(com=2).mean()
+    df['J'] = 3 * df['K'] - 2 * df['D']
+    kdj_positon=df['K']>df['D']
+    df.loc[kdj_position[(kdj_position == True) & (kdj_position.shift() == False)].index, 'KDJ_金叉死叉'] = '金叉'
+    df.loc[kdj_position[(kdj_position == False) & (kdj_position.shift() == True)].index, 'KDJ_金叉死叉'] = '死叉'
+    
 
 
 '''
@@ -52,17 +65,16 @@ def myMACD(price, fastperiod, slowperiod, signalperiod):
     4死叉：
 '''
 def kdj():
-    stock='000157.SZ'
-    query_sql='''select * from stdaily where ts_code=$stock'''
+    global df
+    df=pro.daily(ts_code='300905.SZ')
+    df=df[::-1]
+    myKDJ(df['low'],df['high'],df['close'])
     
-    df=pd.read_sql_query(query_sql,engine)
-    #df.reverse()
-    print(df['close'])
-    dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
+
+kdj()
 
 
-
-
+ 
 
 
 
@@ -95,23 +107,11 @@ def macdhist_300(days,dday):
             df=df[::-1]  #倒序，同sort区别为sort为排序方式
             dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
             hist = hist.values[days:]
-            if  (hist>0).sum()>=30 and   (hist>-0.07 and hist<0.07).sum()>=dday:
+            if  (len(hist [ (hist >=-0.07) * (hist <= 0.07)]))>=22:
                 stocklist.append(stock)
         except:
             print('不可用：',stock)
     return stocklist
 
 
-stocks=pro.stock_basic()
-dfs=pd.read_excel('D:/StocksInfo.xlsx')
-stocks=dfs['ts_code'].values
-cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
-for i in cy_stock['ts_code'].values:
-    df = pro.daily(ts_code=i)
-    df=df[::-1]
-    dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-    hist = hist.values[-25:]
-    if(len(hist [ (hist >=-0.07) * (hist <= 0.07)]))>=22:
-        print (i)
-# print((hist>-0.7) & (hist<0.7)).sum()
-# if  (hist>0).sum()>=30 and   (hist>-0.07 and hist<0.07).sum()>=10:
+
