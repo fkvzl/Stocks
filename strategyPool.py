@@ -50,9 +50,11 @@ def myKDJ(low,high,close):
     df['K'] = pd.DataFrame(rsv).ewm(com=2).mean()
     df['D'] = df['K'].ewm(com=2).mean()
     df['J'] = 3 * df['K'] - 2 * df['D']
-    kdj_positon=df['K']>df['D']
+    kdj_position=df['K']>df['D']   #k->d-0+金叉；k->d->0-死叉
+    
     df.loc[kdj_position[(kdj_position == True) & (kdj_position.shift() == False)].index, 'KDJ_金叉死叉'] = '金叉'
     df.loc[kdj_position[(kdj_position == False) & (kdj_position.shift() == True)].index, 'KDJ_金叉死叉'] = '死叉'
+    print(df)
     
 
 

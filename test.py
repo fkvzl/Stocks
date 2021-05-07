@@ -31,4 +31,11 @@ def kdj():
     #df.reverse()
     print(df)
 
-kdj()
+kdj_position=pd.Series([False,True,True,False])
+qqshift=pd.Series([1,2,3,4,5]).shift()
+print(qqshift)
+
+
+df.loc[kdj_position[(kdj_position == True) & (kdj_position.shift() == False)].index, 'KDJ_金叉死叉'] = '金叉'
+print((kdj_position == True) & (kdj_position.shift() == False))
+print(kdj_positon)
