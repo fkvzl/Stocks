@@ -20,27 +20,30 @@ pro = ts.pro_api(env='prd')
 
 
 #横坐标x：交易日期
-tra_cal = pro.trade_cal(start_date=20210101,end_date=20210519)
+df_cal = pro.trade_cal(start_date=20210101,end_date=20210519)
 x = tra_cal.trade_date.values
 
 #纵坐标：每天的涨跌数量
-#yr = []
-#yf = []
-#for i in x:
-#    df=pro.daily(trade_date=i)
-#    dfcyb_r=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
-#    dfcyb_f=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
-#    cyb_rises=dfcyb_r['pct_chg'].count()
-#    cyb_fails=dfcyb_f['pct_chg'].count()
-#    yr.append(cyb_rises)   
-#    yf.append(cyb_fails)
+
+for i in x:
+    df=pro.daily(trade_date=i)
+    cyb_up=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
+    cyb_down=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
+    df['up'] = 
+    df['down'] = 
+    cyb_rises=cyb_up['pct_chg'].count()
+    cyb_fails=cyb_down['pct_chg'].count()
+    yr.append(cyb_rises)   
+    yf.append(cyb_fails)
 
 dataf = {'A':['20210101','20210102','20210103'],
         'B':['10','20','6'],
-        'C':['15','5','19']}
+        'C':[15,5,19]}
+d=[1,5,19]
 df = pd.DataFrame(dataf)
- 
+
+df_cal.to_excel('D:/StocksInfo.xlsx')  
 ##画图
 plt.figure()
-plt.plot(df.A,df.C)
+plt.plot(df.A,d)
 plt.show()
