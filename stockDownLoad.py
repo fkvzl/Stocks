@@ -73,19 +73,32 @@ user='stock'
 pwd='stock'
 db='stockdb'
 
-st_date=20000101
-ed_date=20210310
+st_date=20210101
+ed_date=20210529
 
-engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
+# engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
 # conn = pymysql.connect(host=ip,user=user,password=pwd,database=db,charset='utf8')
 # cursor = conn.cursor()
 # cursor.execute(sql)
 #
-for code in get_allstocks()['ts_code']:
-    down_stdailys(code,st_date,ed_date)
+# for code in get_allstocks()['ts_code']:
+#     down_stdailys(code,st_date,ed_date)
     
  
+# df_cal = pro.trade_cal(start_date=20210101,end_date=20210529,exchange='SSE')
+# df_cal.to_excel('D:/tra_date.xlsx')  
+df_date = pd.read_excel('D:/tra_date.xlsx')
+#获取日期
+dates = df_date.trade_date.values
 
-#down_stocks()
+###主函数
+# for i in dates:
+    #获取每天的涨跌数量
+df=pro.daily(trade_date=20210104)
+# print(df[df.ts_code.str.contains('^300')].pct_chg)
+# df_up=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
+# df_down=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
 
+# print(df_down)
+ 

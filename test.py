@@ -6,7 +6,7 @@ Created on Fri Apr  2 13:12:06 2021
 """
 
 import xcsc_tushare as ts
-import talib as tl
+
 from sqlalchemy import create_engine
 import pymysql
 import numpy as np
@@ -31,11 +31,15 @@ def kdj():
     #df.reverse()
     print(df)
 
-kdj_position=pd.Series([False,True,True,False])
-qqshift=pd.Series([1,2,3,4,5]).shift()
-print(qqshift)
+
+# print((kdj_position == True) & (kdj_position.shift() == False))
+# print(kdj_position)
+# print(df)
 
 
-df.loc[kdj_position[(kdj_position == True) & (kdj_position.shift() == False)].index, 'KDJ_金叉死叉'] = '金叉'
-print((kdj_position == True) & (kdj_position.shift() == False))
-print(kdj_positon)
+# dataf = {'A':['20210101','20210102','20210103'],
+#         'B':['10','20','6'],
+#         'C':[15,5,19]}
+# d=[1,5,19]
+# df = pd.DataFrame(dataf)
+

@@ -19,31 +19,36 @@ ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
 pro = ts.pro_api(env='prd')
 
 
-#横坐标x：交易日期
-df_cal = pro.trade_cal(start_date=20210101,end_date=20210519)
-x = tra_cal.trade_date.values
+#下载交易日期
+# df_cal = pro.trade_cal(start_date=20210101,end_date=20210519)
+# df_cal.to_excel('D:/tra_date.xlsx')  
 
-#纵坐标：每天的涨跌数量
+#结果集定义
+df_date = pd.read_excel('D:/tra_date.xlsx')
+#获取日期
+dates = df_date.trade_date.values
 
-for i in x:
-    df=pro.daily(trade_date=i)
-    cyb_up=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
-    cyb_down=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
-    df['up'] = 
-    df['down'] = 
-    cyb_rises=cyb_up['pct_chg'].count()
-    cyb_fails=cyb_down['pct_chg'].count()
-    yr.append(cyb_rises)   
-    yf.append(cyb_fails)
+###主函数
+for i in dates:
+    #获取每天创业板的涨跌数量
+    df=pro.daily(trade_date=str(i))
+    df_300 = df[df.ts_code.str.contains('^300')]
+    up_300 = df_300[df_300.pct_chg>0].pct_chg.count()
+    down_300 = df_300[df_300.pct_chg<0].pct_chg.count()
+    
+ 
+    
+    #复制涨跌数量到结果集里
+    df_date.loc[df_date[df_date.trade_date==i].index,'up']=up_300
+    df_date.loc[df_date[df_date.trade_date==i].index,'down']=down_300
 
-dataf = {'A':['20210101','20210102','20210103'],
-        'B':['10','20','6'],
-        'C':[15,5,19]}
-d=[1,5,19]
-df = pd.DataFrame(dataf)
+df_date.to_excel('D:/tra_date.xlsx') 
+###主函数
 
-df_cal.to_excel('D:/StocksInfo.xlsx')  
+
 ##画图
 plt.figure()
-plt.plot(df.A,d)
+plt.plot(df_date.trade_date,df_date.up)
+plt.tight_layout()
 plt.show()
+##主函数
