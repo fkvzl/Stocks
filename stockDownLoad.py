@@ -74,7 +74,7 @@ pwd='stock'
 db='stockdb'
 
 st_date=20210101
-ed_date=20210529
+ed_date=20210710
 
 # engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
@@ -95,10 +95,12 @@ dates = df_date.trade_date.values
 ###主函数
 # for i in dates:
     #获取每天的涨跌数量
-df=pro.daily(trade_date=20210104)
+
 # print(df[df.ts_code.str.contains('^300')].pct_chg)
 # df_up=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
 # df_down=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
 
-# print(df_down)
- 
+data=pro.stock_basic()
+for i in data['ts_code']:
+    df= pro.daily(ts_code=i,start_date=st_date,end_date=ed_date)#遍历每天行情
+    df.to_excel(f'D:/stock/{i}.xlsx')
