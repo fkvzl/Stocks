@@ -25,6 +25,7 @@ pro = ts.pro_api(env='prd')
 
 #结果集定义
 df_date = pd.read_excel('D:/tra_date.xlsx')
+print(type(df_date))
 #获取日期
 dates = df_date.trade_date.values
 
