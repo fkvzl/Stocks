@@ -5,7 +5,6 @@ Created on Sun Mar 28 10:23:10 2021
 @author: Administrator
 """
 import xcsc_tushare as ts
-import talib as tl
 from sqlalchemy import create_engine
 import pymysql
 import numpy as np
@@ -73,7 +72,7 @@ def kdj():
     myKDJ(df['low'],df['high'],df['close'])
     
 
-kdj()
+ 
 
 
  
@@ -99,7 +98,7 @@ def vr():
 2满足macd多
 390天最低kdj
 '''
-def macdhist_300(days,dday):
+def macdhist_300(days):
     stocks = pro.stock_basic()
     cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
     stocklist=[]
@@ -116,4 +115,4 @@ def macdhist_300(days,dday):
     return stocklist
 
 
-
+macdhist_300(30)
