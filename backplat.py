@@ -17,14 +17,20 @@ import pandas as pd
 
 
 class TestStrategy(bt.Strategy):
+    '''
+    近5日累计负数和<-5且作日收盘<21线，今日收盘>21线。买入
+    T+5收盘卖出
+    '''
 
+    #日志格式
     def log(self, txt, dt=None,doprint=True):
         if doprint:
             dt = dt or self.datas[0].datetime.date(0)
             print('%s, %s' % (dt.isoformat(), txt))
 
+    
     def __init__(self):
-        # Keep a reference to the "close" line in the data[0] dataseries
+        #初始化变量
         self.dataclose = self.datas[0].close
         self.order = None
         self.buyprice = None
@@ -33,10 +39,17 @@ class TestStrategy(bt.Strategy):
         self.sma5 = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=5)
         # 十日移动平均线
-        self.sma10 = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=10)
+        self.sma21 = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=21)
         
+        #近5日价格，近5日负数价格
+        last5d = self.dataclose[for ]#要改成收益率
+        print(self.dataclose[0:-6:-1])
+        self.low5 = [x for x in self.last5d if x<0]
+        self.buyday=0
+    
     def notify_order(self, order):
+        #订单状态处理
             if order.status in [order.Submitted, order.Accepted]:
                 # Buy/Sell order submitted/accepted to/by broker - Nothing to do
                 return
@@ -46,10 +59,10 @@ class TestStrategy(bt.Strategy):
             if order.status in [order.Completed]:
                 if order.isbuy():
                     self.log('BUY EXECUTED, price:%.2f,cost:%.2f,comm:%.2f' % 
-                             (order.executed.price,order.executed.value,order.executed.comm)
+                             (order.executed.price,order.executed.value,order.executed.comm))
                 elif order.issell():
                     self.log('SELL EXECUTED,price:%.2f,cost:%.2f,comm:%.2f' % 
-                             (order.executed.price,order.executed.value,order.executed.comm)
+                             (order.executed.price,order.executed.value,order.executed.comm))
                                      
                 self.bar_executed = len(self)
     
@@ -58,15 +71,27 @@ class TestStrategy(bt.Strategy):
     
             # Write down: no pending order
             self.order = None
+            
     def next(self):
-        # Simply log the closing price of the series from the reference
+        '''
+        1前提判断
+        2买入
+        3卖出
+        '''
+        #如果正在下单，不提交二次订单
         if self.order:
             return
+        
+        #如果还没买入
         if not self.position:
-            if self.dataclose[0]<self.dataclose[-1]:
-                if self.dataclose[-1]<self.dataclose[-2]:
-                    self.log('buy start,%.2f' %self.dataclose[0])
-                    self.order=self.buy()
+            if self.dataclose[0]>=self.sma21[0] and self.dataclose[-1]<self.sma21[-1] and sum(self.low5)<-5:
+
+                self.log('buy start,%.2f' %self.dataclose[0])
+                self.order=self.buy()
+                self.buyday= self.datas[0].date(0)
+                print(self.buyday)
+        elif self.datas[0].date(0)-self.buyday==5:
+            self.order=self.sell()
                     
         #是否正在下单
 #        if self.order:
@@ -87,7 +112,7 @@ class TestStrategy(bt.Strategy):
  
 def runstart():
     #数据-获取
-    df = pro.daily(ts_code='000001.SZ',start_date=20210601)
+    df = pro.daily(ts_code='000001.SZ',start_date=20210101)
     #数据-加工
     df['trade_date']=pd.to_datetime(df['trade_date'])
     df=df.rename(columns={'vol':'volume'})
@@ -106,12 +131,11 @@ def runstart():
     cerebro.broker.setcash(100000.0)  #总资产
     cerebro.broker.setcommission(0.0005)
     
-    
+    # cerebro.plot()
     #回测-启动
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
     cerebro.run()
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    
     
 if __name__ == '__main__':
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')

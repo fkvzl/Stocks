@@ -4,7 +4,7 @@ Created on Sun Mar 28 10:23:10 2021
 
 @author: Administrator
 """
-import xcsc_tushare as ts
+import tushare as ts
 from sqlalchemy import create_engine
 import pymysql
 import numpy as np
@@ -12,16 +12,11 @@ import matplotlib.pyplot   as plt
 import pandas  as pd
 import xlrd
 
-ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
-pro = ts.pro_api(env='prd')
+# ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
+# pro = ts.pro_api(env='prd')
 
+pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e') 
 
-
-ip='127.0.0.1'
-user='stock'
-pwd='stock'
-db='stockdb'
-engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
 
 
@@ -77,9 +72,17 @@ def kdj():
 
  
 
+'''
+获取创业板股票
+用法 for i in getstocks()
 
 
-    
+'''
+def getStocks():
+    stocks = pro.stock_basic()
+    cyb_stock = stocks[stocks['ts_code'].str.contains('^30')]
+    df_tscode = cyb_stock['ts_code'].values
+    return (df_tscode)
     
     
 '''
@@ -88,8 +91,11 @@ def vr():
 '''
 
     
-    
-    
+'''
+近T日股价是>-2
+'''
+# def overSZ(days):
+        
     
     
     
@@ -99,20 +105,15 @@ def vr():
 390天最低kdj
 '''
 def macdhist_300(days):
-    stocks = pro.stock_basic()
-    cy_stock = stocks[stocks['ts_code'].str.contains('^30')]
-    stocklist=[]
-    for stock in cy_stock['ts_code'].values: #获取全量股票
+    for stock in getStocks(): #获取全量股票
         try:
             df = pro.daily(ts_code=stock)#遍历每天行情
             df=df[::-1]  #倒序，同sort区别为sort为排序方式
             dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
-            hist = hist.values[days:]
-            if  (len(hist [ (hist >=-0.07) * (hist <= 0.07)]))>=22:
-                stocklist.append(stock)
+            hist = hist.values[days:]   #days要负数
+            if  (len(hist [ (hist >=-0.1) * (hist <= 0.07)]))>=22:
+                print(stock)
         except:
             print('不可用：',stock)
-    return stocklist
 
-
-macdhist_300(30)
+macdhist_300(-30)
