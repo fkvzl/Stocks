@@ -48,10 +48,6 @@ class TestStrategy(bt.Strategy):
         self.sma21 = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=21)
         #近5日价格，近5日负数价格
-        last5d=[]
-        for t in range(-4,1):
-            last5d.append((self.dataclose[t]-self.dataclose[t-1])/self.dataclose[t-1]*100)
-        self.low5 = [x for x in last5d if x<0]
         
         #费用
         self.buyprice = None
@@ -107,9 +103,9 @@ class TestStrategy(bt.Strategy):
             return
         
         #只要触发就买
-        if self.dataclose[0]>=self.sma21[0] and self.dataclose[-1]<self.sma21[-1]:
+        #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
+        if self.dataclose[-4]>self.sma21[-4] and self.dataclose[-1]<self.sma21[-1] and self.dataclose[0]>self.sma21[0]:
             self.order=self.buy()
-            self.buyday= self.datas[0].datetime.date(0)
                 
         # print('today:%s,%s'%(self.datas[0].datetime.date(0),self.order))
         #卖出必须在买入有头寸之后
@@ -118,23 +114,14 @@ class TestStrategy(bt.Strategy):
                 self.order=self.sell()
                     
 
-    #     if not self.position:
-    #         #如果没买入  5日线超10日线
-    #         if self.sma5[0]>self.sma21[0]:
-    #             self.log('Buy,%.2f' %self.dataclose[0])
-    #             self.order=self.buy()
-    #     else:
-    #         if self.sma5[0]<self.sma21[0]:
-    #             self.order=self.sell()
-    # def stop(self):
-    #     self.log(u'金叉死叉情况 last vol:%.2f' %(self.broker.getvalue()),doprint=True)
+
 
  
 def runstart():
     #数据-获取
     b = Bokeh(style='bar', plot_mode='single', scheme=Tradimo())
 
-    df = pro.daily(ts_code='300005.SZ',start_date=20210301)
+    df = pro.daily(ts_code='600328.SZ',start_date=20210301)
     #数据-加工
     df['trade_date']=pd.to_datetime(df['trade_date'])
     df=df.rename(columns={'vol':'volume'})
