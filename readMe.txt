@@ -1,3 +1,10 @@
+
+pip install tushare
+pip install backtrader
+pip uninstall matplotlib
+pip install matplotlib==3.2.2
+
+pip install backtrader_plotting
 【环境搭建】
 --1管理员启动数据库，
 >net start mysql
