@@ -47,7 +47,7 @@ class TestStrategy(bt.Strategy):
         # 十日移动平均线
         self.sma21 = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=21)
-        #近5日价格，近5日负数价格
+ 
         
         #费用
         self.buyprice = None
@@ -72,17 +72,17 @@ class TestStrategy(bt.Strategy):
             # 买入卖出订单处理
             if order.status in [order.Completed]:
                 if order.isbuy():
-                    self.log('买入单价: %.2f, 金额: %.2f, 手续费 %.2f' %
+                    self.log('买入单价: %.2f, 总金额: %.2f, 手续费 %.2f' %
                     (order.executed.price,
-                     order.executed.value,
+                     order.executed.value *-1,
                      order.executed.comm))
-                    self.buyprice = order.executed.price
-                    self.buycomm = order.executed.comm
+
                 elif order.issell():
-                    self.log('卖出单价: %.2f, 金额: %.2f, 手续费 %.2f' %
-                         (order.executed.price,
-                          order.executed.value,
-                          order.executed.comm))
+                    self.log('卖出单价: %.2f, 总金额: %.2f, 总资产:%.2f，手续费 %.2f' %
+                    (order.executed.price,
+                     order.executed.price *1000,
+                     self.broker.getvalue(),
+                     order.executed.comm))
                                      
                 self.bar_executed = len(self)
     
@@ -101,9 +101,9 @@ class TestStrategy(bt.Strategy):
         #如果正在下单，不提交二次订单
         if self.order:
             return
-        
         #只要触发就买
         #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
+
         if self.dataclose[-4]>self.sma21[-4] and self.dataclose[-1]<self.sma21[-1] and self.dataclose[0]>self.sma21[0]:
             self.order=self.buy()
                 
@@ -121,7 +121,7 @@ def runstart():
     #数据-获取
     b = Bokeh(style='bar', plot_mode='single', scheme=Tradimo())
 
-    df = pro.daily(ts_code='600328.SZ',start_date=20210301)
+    df = pro.daily(ts_code='600884.SH',start_date=20210101)
     #数据-加工
     df['trade_date']=pd.to_datetime(df['trade_date'])
     df=df.rename(columns={'vol':'volume'})
@@ -139,7 +139,7 @@ def runstart():
     
     #回测-资金规则(总资产和手续费)
     cerebro.broker.setcash(100000.0) 
-    cerebro.addsizer(bt.sizers.FixedSize,stake=10)
+    cerebro.addsizer(bt.sizers.FixedSize,stake=1000)
     cerebro.broker.setcommission(0.0005)
     
     # cerebro.plot()

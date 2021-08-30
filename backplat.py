@@ -21,7 +21,9 @@ class TestStrategy(bt.Strategy):
     近5日累计负数和<-5且作日收盘<21线，今日收盘>21线。买入
     T+5收盘卖出
     '''
-
+    params = (
+            ('maperiod', 15),
+        )
     #日志格式
     def log(self, txt, dt=None,doprint=True):
         if doprint:
@@ -42,11 +44,8 @@ class TestStrategy(bt.Strategy):
         self.sma21 = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=21)
         
-        #近5日价格，近5日负数价格
-        last5d = self.dataclose[for ]#要改成收益率
-        print(self.dataclose[0:-6:-1])
-        self.low5 = [x for x in self.last5d if x<0]
-        self.buyday=0
+        self.sma = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=self.params.maperiod)
     
     def notify_order(self, order):
         #订单状态处理
@@ -59,10 +58,11 @@ class TestStrategy(bt.Strategy):
             if order.status in [order.Completed]:
                 if order.isbuy():
                     self.log('BUY EXECUTED, price:%.2f,cost:%.2f,comm:%.2f' % 
-                             (order.executed.price,order.executed.value,order.executed.comm))
+                             (order.executed.price,order.executed.value,order.executed.comm ))
+                    self.buycomm = order.executed.comm
                 elif order.issell():
                     self.log('SELL EXECUTED,price:%.2f,cost:%.2f,comm:%.2f' % 
-                             (order.executed.price,order.executed.value,order.executed.comm))
+                             (order.executed.price,order.executed.value,order.executed.comm ))
                                      
                 self.bar_executed = len(self)
     
@@ -73,41 +73,33 @@ class TestStrategy(bt.Strategy):
             self.order = None
             
     def next(self):
-        '''
-        1前提判断
-        2买入
-        3卖出
-        '''
-        #如果正在下单，不提交二次订单
+      # Simply log the closing price of the series from the reference
+        self.log('Close, %.2f' % self.dataclose[0])
+
+        # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
             return
-        
-        #如果还没买入
-        if not self.position:
-            if self.dataclose[0]>=self.sma21[0] and self.dataclose[-1]<self.sma21[-1] and sum(self.low5)<-5:
 
-                self.log('buy start,%.2f' %self.dataclose[0])
-                self.order=self.buy()
-                self.buyday= self.datas[0].date(0)
-                print(self.buyday)
-        elif self.datas[0].date(0)-self.buyday==5:
-            self.order=self.sell()
-                    
-        #是否正在下单
-#        if self.order:
-#            return
-#        
-#        
-#        if not self.position:
-#            #如果没买入  5日线超10日线
-#            if self.sma5[0]>self.sma10[0]:
-#                self.log('Buy,%.2f' %self.dataclose[0])
-#                self.order=self.buy()
-#        else:
-#            if self.sma5[0]<self.sma10[0]:
-#                self.order=self.sell()
-#    def stop(self):
-#        self.log(u'金叉死叉情况 last vol:%.2f' %(self.broker.getvalue()),doprint=True)
+        # Check if we are in the market
+        if not self.position:
+
+            # Not yet ... we MIGHT BUY if ...
+            if self.dataclose[0] > self.sma[0]:
+
+                # BUY, BUY, BUY!!! (with all possible default parameters)
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.buy()
+
+        else:
+
+            if self.dataclose[0] < self.sma[0]:
+                # SELL, SELL, SELL!!! (with all possible default parameters)
+                self.log('SELL CREATE, %.2f' % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.sell()
 
  
 def runstart():
@@ -129,6 +121,7 @@ def runstart():
     
     #回测-资金规则
     cerebro.broker.setcash(100000.0)  #总资产
+    cerebro.addsizer(bt.sizers.FixedSize,stake=1000)
     cerebro.broker.setcommission(0.0005)
     
     # cerebro.plot()
