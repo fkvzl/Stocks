@@ -6,7 +6,8 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import datetime  # For datetime objects
+import datetime
+from backtrader import broker  # For datetime objects
 import tushare as ts
 # Import the backtrader platformr
 import backtrader as bt
@@ -52,7 +53,7 @@ class TestStrategy(bt.Strategy):
         #费用
         self.buyprice = None
         self.buycomm = None
-        
+        self.size=0
         
         #绘图
         bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
@@ -62,7 +63,11 @@ class TestStrategy(bt.Strategy):
         rsi = bt.indicators.RSI(self.datas[0])
         bt.indicators.SmoothedMovingAverage(rsi, period=10)
         bt.indicators.ATR(self.datas[0]).plot = False
+
         
+        
+        
+
     def notify_order(self, order):
         #订单状态处理
             if order.status in [order.Submitted, order.Accepted]:
@@ -72,17 +77,22 @@ class TestStrategy(bt.Strategy):
             # 买入卖出订单处理
             if order.status in [order.Completed]:
                 if order.isbuy():
-                    self.log('买入单价: %.2f, 总金额: %.2f, 手续费 %.2f' %
+                    self.size=self.getposition(self.datas[0]).size
+                    self.log('买入单价: %.2f, 总金额: %.2f, 手续费 %.2f,数量%d,数量%d'%
                     (order.executed.price,
                      order.executed.value *-1,
-                     order.executed.comm))
+                     order.executed.comm,
+                     0.02,
+                     self.size))
 
                 elif order.issell():
-                    self.log('卖出单价: %.2f, 总金额: %.2f, 总资产:%.2f，手续费 %.2f' %
+                    print(order.executed.size)
+
+                    self.log('卖出单价: %.2f, 总金额: %.2f, 手续费 %.2f,数量:%s' %
                     (order.executed.price,
-                     order.executed.price *1000,
-                     self.broker.getvalue(),
-                     order.executed.comm))
+                     self.broker.get_cash(),
+                     order.executed.comm,
+                     order.executed.size))
                                      
                 self.bar_executed = len(self)
     
@@ -103,7 +113,6 @@ class TestStrategy(bt.Strategy):
             return
         #只要触发就买
         #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
-
         if self.dataclose[-4]>self.sma21[-4] and self.dataclose[-1]<self.sma21[-1] and self.dataclose[0]>self.sma21[0]:
             self.order=self.buy()
                 
