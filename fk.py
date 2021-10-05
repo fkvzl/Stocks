@@ -36,6 +36,10 @@ def cal_macd_system(data):
     return data['DIFF'], data['DEA'],data['MACD']
  
 
+def get_cyb():
+    stocks = pro.stock_basic()
+    cyb = stocks[stocks['ts_code'].str.contains('^300')]
+    return cyb['ts_code'].values
 
 def macdhist_300(days):  #最近10天用-10参数
     stocks = pro.stock_basic()
@@ -58,4 +62,9 @@ def macdhist_300(days):  #最近10天用-10参数
 # dif,dea,hist=myMACD(df['close'],12,26,9)
 # hist = hist.values[-10:]
 # print(len(hist [ (hist >=-0.07) * (hist <= 0.07)]))
-macdhist_300(-90)
+
+"""
+获取创业板df函数
+for i in get_cyb():
+    print(i)
+"""
