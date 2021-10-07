@@ -38,10 +38,7 @@ class MyStrategy(bt.Strategy):
     
     def __init__(self):
         #初始化变量
-        print("----------------start---------------")
-        print(self.datas[0].datetime.date[0])
-        print(self.datas[0].datetime.date[-1])
-        print(self.datas[-1].datetime.date[0])
+
         self.dataclose = self.datas[0].close
         self.order = None
         self.buyprice = None
@@ -81,21 +78,18 @@ class MyStrategy(bt.Strategy):
             # 买入卖出订单处理
             if order.status in [order.Completed]:
                 if order.isbuy():
-                    self.log('买入单价: %.2f, 总金额: %.2f, 手续费 %.2f,数量%d'%
+                    self.log('买入单价: %.2f, 买入总金额: %.2f, 手续费 %.2f,数量%.2f'%
                     (order.executed.price,
                      order.executed.value *-1,
-                     self.broker.get_cash(),
-                     #order.executed.comm,
-                     self.getposition().size))
+                     order.executed.comm,
+                     order.executed.size))
 
                 elif order.issell():
-                    print(order.executed.size)
-
-                    self.log('卖出单价: %.2f, 总金额: %.2f, 手续费 %.2f,数量:%s' %
+                    self.log('卖出单价: %.2f, 总资产: %.2f, 手续费 %.2f,数量:%.2f' %
                     (order.executed.price,
-                     self.broker.get_cash(),
-                     #order.executed.comm,
-                     self.broker.get_cash(),
+                    #  self.broker.get_cash(),
+                     order.executed.cash,
+                     order.executed.comm,
                      order.executed.size))
                                      
                 self.bar_executed = len(self)
@@ -119,13 +113,14 @@ class MyStrategy(bt.Strategy):
         #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
         if self.dataclose[-4]>self.sma21[-4] and self.dataclose[-1]<self.sma21[-1] and self.dataclose[0]>self.sma21[0]:
             
-            self.order=self.buy(size=0.1*self.broker.getvalue())
+            self.order=self.buy(size=(0.1*self.broker.getvalue()//self.dataclose))
+            # self.order=self.buy(size=(math.floor(0.1*self.broker.getvalue()/self.dataclose)))
                 
         # print('today:%s,%s'%(self.datas[0].datetime.date(0),self.order))
         #卖出必须在买入有头寸之后
         elif self.position:
             if len(self)>=(self.bar_executed + self.params.exitbars):
-                self.order=self.sell()
+                self.order=self.sell(size=self.getposition(self.data0).size)
                     
 
 
