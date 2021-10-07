@@ -25,10 +25,10 @@ class MyStrategy(bt.Strategy):
     T+5收盘卖出
     '''
     
-    params = (
-        ('exitbars',5),
-        ('maperiod', 15),
-        )
+    params = dict(
+        exitbars = 5,
+        min_period = 21,
+    )
     #日志格式
     def log(self, txt, dt=None,doprint=True):
         if doprint:
@@ -37,34 +37,29 @@ class MyStrategy(bt.Strategy):
 
     
     def __init__(self):
-        #初始化变量
+        #这里用了虚拟下标d，作用同唯一标识，有些地方用tscode
+        #indx赋值,bt指标使用datas[i]处理
+        self.inds=dict()
+        for i,d in enumerate(self.datas):
+            self.inds[d]=bt.ind.SMA(d.close,period=self.p.min_period)
 
-        self.dataclose = self.datas[0].close
+            bt.indicators.ExponentialMovingAverage(self.datas[i], period=self.p.min_period)
+            bt.indicators.WeightedMovingAverage(self.datas[i], period=self.p.min_period).subplot = True
+            bt.indicators.StochasticSlow(self.datas[i])
+            bt.indicators.MACDHisto(self.datas[i])
+            rsi = bt.indicators.RSI(self.datas[i])
+            bt.indicators.SmoothedMovingAverage(rsi, period=self.p.min_period)
+            bt.indicators.ATR(self.datas[i]).plot = False
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        
-        self.sma = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=self.params.maperiod)
-        # 十日移动平均线
-        self.sma21 = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=21)
- 
-        
-        #费用
-        self.buyprice = None
-        self.buycomm = None
         self.size=0
-        
-        #绘图
-        bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
-        bt.indicators.WeightedMovingAverage(self.datas[0], period=25).subplot = True
-        bt.indicators.StochasticSlow(self.datas[0])
-        bt.indicators.MACDHisto(self.datas[0])
-        rsi = bt.indicators.RSI(self.datas[0])
-        bt.indicators.SmoothedMovingAverage(rsi, period=10)
-        bt.indicators.ATR(self.datas[0]).plot = False
-
+        # self.sma = bt.indicators.SimpleMovingAverage(
+        #     self.datas[0], period=self.params.maperiod)
+        # # 十日移动平均线
+        # self.sma21 = bt.indicators.SimpleMovingAverage(
+        #     self.datas[0], period=21)
+ 
         
         
         
@@ -87,8 +82,7 @@ class MyStrategy(bt.Strategy):
                 elif order.issell():
                     self.log('卖出单价: %.2f, 总资产: %.2f, 手续费 %.2f,数量:%.2f' %
                     (order.executed.price,
-                    #  self.broker.get_cash(),
-                     order.executed.cash,
+                     self.broker.get_cash(),
                      order.executed.comm,
                      order.executed.size))
                                      
@@ -106,21 +100,17 @@ class MyStrategy(bt.Strategy):
         2买入
         3卖出
         '''
-        #如果正在下单，不提交二次订单
-        if self.order:
-            return
-        #只要触发就买
-        #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
-        if self.dataclose[-4]>self.sma21[-4] and self.dataclose[-1]<self.sma21[-1] and self.dataclose[0]>self.sma21[0]:
-            
-            self.order=self.buy(size=(0.1*self.broker.getvalue()//self.dataclose))
-            # self.order=self.buy(size=(math.floor(0.1*self.broker.getvalue()/self.dataclose)))
-                
-        # print('today:%s,%s'%(self.datas[0].datetime.date(0),self.order))
-        #卖出必须在买入有头寸之后
-        elif self.position:
-            if len(self)>=(self.bar_executed + self.params.exitbars):
-                self.order=self.sell(size=self.getposition(self.data0).size)
+        #放在最前面，因为多股需要遍历操作
+        #持仓赋值
+        for i,d in enumerate(self.datas):
+            vol = self.getposition(d)
+            #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
+
+            if d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
+                self.order=self.buy(data=d,size=(0.1*self.broker.getvalue()//d.close))
+            elif vol:
+                if len(self)>=(self.bar_executed + self.params.exitbars):
+                    self.order=self.sell(data=d,size=self.getposition(d).size)
                     
 
 
@@ -135,7 +125,7 @@ def runstart():
 
     #数据加工清洗:
     #for d in fk.get_cyb:
-    stockpool=['600884.sh','601012.sh']
+    
     for code in stockpool:
         codename=code
         df = pro.daily(ts_code=code,start_date=20210101)
@@ -175,6 +165,7 @@ def runstart():
     print('DW:',result.analyzers.DW.get_analysis())
     
 if __name__ == '__main__':
+    stockpool=['600884.sh','601012.sh']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
     runstart()
     
