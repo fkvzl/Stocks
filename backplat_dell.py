@@ -16,6 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
+import backtrader.analyzers as btanalyzers
 import fk
 
 
@@ -142,8 +143,9 @@ def runstart():
 
     
     cerebro.addstrategy(MyStrategy)
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='SR')
-    cerebro.addanalyzer(bt.analyzers.DrawDown, _name='DW')
+    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='sharpe')
+    cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
+    cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
     
     
  
@@ -152,20 +154,28 @@ def runstart():
     cerebro.broker.setcash(100000.0) 
     cerebro.broker.setcommission(0.0003)
     
-    # cerebro.plot()
+    
     #回测-启动
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    results = cerebro.run()
-    result = results[0]
-
+    back = cerebro.run()
+    #总份额，年化，回撤，夏普
+    ratio_list=[[
+        x.analyzers.returns.get_analysis()['rtot'],
+        x.analyzers.returns.get_analysis()['rnorm100'],
+        x.analyzers.drawdown.get_analysis()['max']['drawdown'],
+        x.analyzers.sharpe.get_analysis()['sharperatio']] for x in back]
+    print(ratio_list)
+    ratio_df = pd.DataFrame(ratio_list,columns=['Total_return','APR','DrawDown','Sharpe_Ratio'])
+    print(ratio_df)
     cerebro.plot(b)
+    # cerebro.plot(style='candle')
     
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    print('SR:',result.analyzers.SR.get_analysis())
-    print('DW:',result.analyzers.DW.get_analysis())
+    print('SR:',back[0].analyzers.sharpe.get_analysis()['sharperatio'])
+    print('DW:',back[0].analyzers.DW.get_analysis())
     
 if __name__ == '__main__':
-    stockpool=['600884.sh','601012.sh']
+    stockpool=['600884.sh','601012.sh','300059.sz']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
     runstart()
     
