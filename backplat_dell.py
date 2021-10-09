@@ -129,7 +129,7 @@ def runstart():
     
     for code in stockpool:
         codename=code
-        df = pro.daily(ts_code=code,start_date=20210101)
+        df = pro.daily(ts_code=code,start_date=20180101)
      #数据-加工
         df['trade_date']=pd.to_datetime(df['trade_date'])
         df=df.rename(columns={'vol':'volume'})
@@ -143,9 +143,12 @@ def runstart():
 
     
     cerebro.addstrategy(MyStrategy)
-    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='sharpe')
-    cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
-    cerebro.addanalyzer(bt.analyzers.Returns, _name='returns')
+    
+    cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='SP') #夏普
+    cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='AR')#每年化收益率
+    cerebro.addanalyzer(bt.analyzers.DrawDown, _name='DD')#回撤
+    cerebro.addanalyzer(bt.analyzers.Returns, _name='RE') #收益率
+   
     
     
  
@@ -156,25 +159,26 @@ def runstart():
     
     
     #回测-启动
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    print('初始金额: %.2f' % cerebro.broker.getvalue())
     back = cerebro.run()
     #总份额，年化，回撤，夏普
     ratio_list=[[
-        x.analyzers.returns.get_analysis()['rtot'],
-        x.analyzers.returns.get_analysis()['rnorm100'],
-        x.analyzers.drawdown.get_analysis()['max']['drawdown'],
-        x.analyzers.sharpe.get_analysis()['sharperatio']] for x in back]
-    print(ratio_list)
-    ratio_df = pd.DataFrame(ratio_list,columns=['Total_return','APR','DrawDown','Sharpe_Ratio'])
+        x.analyzers.SP.get_analysis()['sharperatio'],#夏普比率
+        x.analyzers.RE.get_analysis()['rtot']*100, #总复合收益率        
+        x.analyzers.DD.get_analysis()['max']['drawdown'], #最大回撤
+        x.analyzers.DD.get_analysis()['max']['len']]#最大回撤周期
+        for x in back]  #夏普
+    ratio_df = pd.DataFrame(ratio_list,columns=['夏普','年化%','最大回撤','最大回撤周期'])
     print(ratio_df)
+    
+    print('历年收益率：%s' %back[0].analyzers.AR.get_analysis())#每年年化收益率
+    print('标准收益率：%s' %back[0].analyzers.RE.get_analysis()['rnorm100']) # 年化标准化回报以100%展示
     cerebro.plot(b)
     # cerebro.plot(style='candle')
-    
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    print('SR:',back[0].analyzers.sharpe.get_analysis()['sharperatio'])
-    print('DW:',back[0].analyzers.DW.get_analysis())
+    print('最终收益: %.2f' % cerebro.broker.getvalue())
     
 if __name__ == '__main__':
+    #stockpool=['600884.sh','601012.sh','300059.sz']
     stockpool=['600884.sh','601012.sh','300059.sz']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
     runstart()
