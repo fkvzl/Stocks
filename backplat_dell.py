@@ -6,7 +6,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import datetime
 from backtrader import broker  # For datetime objects
 import tushare as ts
 # Import the backtrader platformr
@@ -16,7 +15,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
-import backtrader.analyzers as btanalyzers
 import fk
 
 
@@ -178,8 +176,8 @@ def runstart():
     print('最终收益: %.2f' % cerebro.broker.getvalue())
     
 if __name__ == '__main__':
-    #stockpool=['600884.sh','601012.sh','300059.sz']
-    stockpool=['600884.sh','601012.sh','300059.sz']
+    # stockpool=['600884.sh','601012.sh','300059.sz']
+    stockpool=['600884.sh']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
     runstart()
     

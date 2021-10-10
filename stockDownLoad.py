@@ -1,11 +1,13 @@
-import xcsc_tushare as ts
+import tushare as ts
+
+
 import pandas as pd 
-import pymysql
 from sqlalchemy import create_engine
  
     
 
  
+
 
 
 
@@ -30,16 +32,12 @@ def db_conn(ip,user,pwd,db,sql):
 #     print(pro.daily(trade_date=d,fields='ts_code,trade_date,pre_close,open,high,low,close,pct_chg,amount'))
 
 #下载所有股票基本信息
-def down_stocks():
+def down_stocksinfo():
     data=pro.stock_basic()
-    data.to_excel('D:/StocksInfo.xlsx')  
+    data.to_excel('C:/FK/StocksInfo.xlsx')  
     return data
 
 
-#获取股票信息
-def get_allstocks():
-    data = pd.read_excel('D:/StocksInfo.xlsx')
-    return data
 
 def down_stdailys(code,start,end):  #遍历每个股票代码
     df = pro.daily(ts_code=code,start_date=start,end_date=end)#遍历每天行情
@@ -65,16 +63,13 @@ def down_stdailys(code,start,end):  #遍历每个股票代码
 
 
 #token、开发环境的使用
-ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
-pro = ts.pro_api(env='prd')
-
+pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
 ip='127.0.0.1'
 user='stock'
 pwd='stock'
 db='stockdb'
 
-st_date=20210101
-ed_date=20210710
+
 
 # engine = create_engine(f'mysql+pymysql://{user}:{pwd}@{ip}:3306/{db}')
 
@@ -88,9 +83,8 @@ ed_date=20210710
  
 # df_cal = pro.trade_cal(start_date=20210101,end_date=20210529,exchange='SSE')
 # df_cal.to_excel('D:/tra_date.xlsx')  
-df_date = pd.read_excel('D:/tra_date.xlsx')
+
 #获取日期
-dates = df_date.trade_date.values
 
 ###主函数
 # for i in dates:
@@ -100,7 +94,22 @@ dates = df_date.trade_date.values
 # df_up=df[df.ts_code.str.contains('^300')& df.pct_chg>0]
 # df_down=df[df.ts_code.str.contains('^300')& df.pct_chg<0]
 
-data=pro.stock_basic()
-for i in data['ts_code']:
-    df= pro.daily(ts_code=i,start_date=st_date,end_date=ed_date)#遍历每天行情
-    df.to_excel(f'D:/stock/{i}.xlsx')
+def down_stocks(path,start,end):
+    st_date=start 
+    ed_date=end 
+    df_codes = pd.read_excel('%s/StocksInfo.xlsx' %path)['ts_code'].tolist()
+    for i in df_codes:
+        try:
+            df= pro.daily(ts_code=i,start_date=st_date,end_date=ed_date)#遍历每天行情
+            df.to_excel(f'%s/local_stock/{i}.xlsx' %path)
+            # df_codes.remove(i)
+            print('%s完成下载' %i)
+        except:
+            print('%s 失败' %i)
+            df= pro.daily(ts_code=i,start_date=st_date,end_date=ed_date)#遍历每天行情
+            df.to_excel(f'C:/FK/local_stock/{i}.xlsx')
+            print('%s完成下载' %i)   
+        continue         
+path = 'C:/FK'
+down_stocks(path,20100101,20211010)
+# down_stocksinfo()

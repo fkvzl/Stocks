@@ -23,6 +23,8 @@ E-mail:fkvzl@qq.com
 【技术指标】
 macd跟kdj要自己写，talib中默认前33数值为NA
 
+[金工]
+华泰金工
 
 20211007
 重新拉代码用如下 git checkout -- backplat_dell.py 
