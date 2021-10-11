@@ -17,7 +17,7 @@ from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
 import fk
 
-
+    
 class MyStrategy(bt.Strategy):
     '''
     近5日累计负数和<-5且作日收盘<21线，今日收盘>21线。买入

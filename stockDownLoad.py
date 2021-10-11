@@ -97,7 +97,12 @@ db='stockdb'
 def down_stocks(path,start,end):
     st_date=start 
     ed_date=end 
-    df_codes = pd.read_excel('%s/StocksInfo.xlsx' %path)['ts_code'].tolist()
+    #多个
+    #df_codes = pd.read_excel('%s/StocksInfo.xlsx' %path)['ts_code'].tolist()
+
+    #单个
+    df_codes = ['603323.sh','603324.sh','603326.sh','603327.sh','603328.sh','603329.sh','603330.sh',
+    '603331.sh','603332.sh','603333.sh']
     for i in df_codes:
         try:
             df= pro.daily(ts_code=i,start_date=st_date,end_date=ed_date)#遍历每天行情
@@ -112,4 +117,4 @@ def down_stocks(path,start,end):
         continue         
 path = 'C:/FK'
 down_stocks(path,20100101,20211010)
-# down_stocksinfo()
+#down_stocksinfo()
