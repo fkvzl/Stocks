@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
+from tushare.pro.data_pro import FACT_LIST
 import fk
 
     
@@ -29,7 +30,7 @@ class MyStrategy(bt.Strategy):
         min_period = 21,
     )
     #日志格式
-    def log(self, txt, dt=None,doprint=True):
+    def log(self, txt, dt=None,doprint=False):
         if doprint:
             dt = dt or self.datas[0].datetime.date(0)
             print('%s, %s' % (dt.isoformat(), txt))
@@ -126,10 +127,11 @@ def runstart():
     #for d in fk.get_cyb:
     
     for code in stockpool:
-        codename=code
-        df = pro.daily(ts_code=code,start_date=20180101)
-     #数据-加工
-        df['trade_date']=pd.to_datetime(df['trade_date'])
+        file = 'C:/FK/local_stock/%s.xlsx' %code
+        df = pd.read_excel(file)
+     
+        #数据-加工, format加上不然出现1970时间坑爹
+        df['trade_date']=pd.to_datetime(df['trade_date'],format='%Y%m%d')
         df=df.rename(columns={'vol':'volume'})
         df.set_index('trade_date', inplace=True)  # 设置索引覆盖原来的数据
         df = df.sort_index(ascending=True)  #从小到大
@@ -138,10 +140,11 @@ def runstart():
         data = bt.feeds.PandasData(dataname=df)
         cerebro.adddata(data,name=code)
 
+        
 
     
     cerebro.addstrategy(MyStrategy)
-    
+    #指标设置
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='SP') #夏普
     cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='AR')#每年化收益率
     cerebro.addanalyzer(bt.analyzers.DrawDown, _name='DD')#回撤
@@ -176,8 +179,7 @@ def runstart():
     print('最终收益: %.2f' % cerebro.broker.getvalue())
     
 if __name__ == '__main__':
-    # stockpool=['600884.sh','601012.sh','300059.sz']
-    stockpool=['600884.sh']
+    stockpool=['600884.sh','601012.sh','300059.sz']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
     runstart()
     

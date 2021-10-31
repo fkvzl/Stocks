@@ -1,0 +1,20 @@
+【跳崖拉升】
+逻辑：出现调整跌破21均线，4日后又站上21均线，5日后卖出
+for i,d in enumerate(self.datas):
+            vol = self.getposition(d)
+            #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
+
+            if d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
+                self.order=self.buy(data=d,size=(0.1*self.broker.getvalue()//d.close))
+            elif vol:
+                if len(self)>=(self.bar_executed + self.params.exitbars):
+                    self.order=self.sell(data=d,size=self.getposition(d).size)
+
+
+
+【布林线启动】
+逻辑：
+1、3线收拢时启动
+2、3线达到平衡，上下线多次压中线无果表示准备工作完成，进攻前期
+3、周线触碰下线表示入场信号
+4、短线买点，k柱上传中线
