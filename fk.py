@@ -39,7 +39,7 @@ def cal_macd_system(data):
 def get_cyb():
     stocks = pro.stock_basic()
     cyb = stocks[stocks['ts_code'].str.contains('^300')]
-    return cyb['ts_code'].values
+    return cyb['ts_code']
 
 def macdhist_300(days):  #最近10天用-10参数
     stocks = pro.stock_basic()

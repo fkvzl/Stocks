@@ -19,7 +19,9 @@ E-mail:fkvzl@qq.com
 2、取列，用df.列名1，或者df['列名1'] ;拓展：df['K']表示新增一列K字段
 3、取行，用loc
 3、上交所6开头SH，其他SZ
-
+4、tushare返回的是df格式，追加字段['ts_code']返回的就是series格式，追加.values返回nadarray格式,追加.tolist()返回list
+5、df.empty
+6、self.getdatabyname(“name”)
 【技术指标】
 macd跟kdj要自己写，talib中默认前33数值为NA
 
