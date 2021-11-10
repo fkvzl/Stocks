@@ -31,3 +31,6 @@ macd跟kdj要自己写，talib中默认前33数值为NA
 20211007
 重新拉代码用如下 git checkout -- backplat_dell.py 
 解决self.buy存在数量非整数，用//向下取余对self.buy的size定义解决，打印的时候注意%d跟%s区别，d会截取整数
+
+20211110
+利用continue解决空xls引起的脏数据

@@ -17,6 +17,7 @@ from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
 from tushare.pro.data_pro import FACT_LIST
 import fk
+import os
 
     
 class MyStrategy(bt.Strategy):
@@ -41,7 +42,6 @@ class MyStrategy(bt.Strategy):
         #indx赋值,bt指标使用datas[i]处理
         self.inds=dict()
         for i,d in enumerate(self.datas):
-            print(self.)
             self.inds[d]=bt.ind.SMA(d.close,period=self.p.min_period)
 
             bt.indicators.ExponentialMovingAverage(self.datas[i], period=self.p.min_period)
@@ -133,21 +133,20 @@ def runstart():
     stockpool = fk.get_cyb().tolist()
 
     
-    for code in stockpool:
-        file = 'C:/FK/local_stock/%s.xlsx' %code
-        df = pd.read_excel(file)
+    for file in fileList:
+        df = pd.read_excel(fileRoot+file)
         if df.empty:
-            break
-        else:
-            #数据-加工, format加上不然出现1970时间坑爹
-            df['trade_date']=pd.to_datetime(df['trade_date'],format='%Y%m%d')
-            df=df.rename(columns={'vol':'volume'})
-            df.set_index('trade_date', inplace=True)  # 设置索引覆盖原来的数据
-            df = df.sort_index(ascending=True)  #从小到大
-            df['openinterest']=0
-            df=df[['open','high','low','close','volume','openinterest']]
-            data = bt.feeds.PandasData(dataname=df)
-            cerebro.adddata(data,name=code)
+            continue  #break是跳出整个for
+    
+        #数据-加工, format加上不然出现1970时间坑爹
+        df['trade_date']=pd.to_datetime(df['trade_date'],format='%Y%m%d')
+        df=df.rename(columns={'vol':'volume'})
+        df.set_index('trade_date', inplace=True)  # 设置索引覆盖原来的数据
+        df = df.sort_index(ascending=True)  #从小到大
+        df['openinterest']=0
+        df=df[['open','high','low','close','volume','openinterest']]
+        data = bt.feeds.PandasData(dataname=df)
+        cerebro.adddata(data,name=file)
 
         
 
@@ -161,7 +160,7 @@ def runstart():
    
     
     
- 
+    
     
     #回测-资金规则(总资产和手续费)
     cerebro.broker.setcash(100000.0) 
@@ -171,7 +170,6 @@ def runstart():
     #回测-启动
     print('初始金额: %.2f' % cerebro.broker.getvalue())
     back = cerebro.run()
-
     #总份额，年化，回撤，夏普
     ratio_list=[[
         x.analyzers.SP.get_analysis()['sharperatio'],#夏普比率
@@ -189,8 +187,10 @@ def runstart():
     print('最终收益: %.2f' % cerebro.broker.getvalue())
     
 if __name__ == '__main__':
-    stockpools=['600884.sh','601012.sh','300059.sz']
+    #stockpools=['000001.sz','600884.sh','601012.sh','300059.sz']
     pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
+    fileRoot = 'C:/FK/local_stock/'
+    fileList = sorted(os.listdir(fileRoot))
     runstart()
     
     
