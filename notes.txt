@@ -48,4 +48,5 @@ macd跟kdj要自己写，talib中默认前33数值为NA
 
 20211204
 实现各股票单独卖出逻辑。采用holday[d]跟len(self)的关联
+使用对象的__dict__方法打印该对象名下所有变量
 学习pyfolio

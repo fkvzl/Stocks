@@ -18,7 +18,7 @@ from backtrader_plotting import Bokeh
 from backtrader_plotting.schemes import Tradimo
 from tushare.pro.data_pro import FACT_LIST
 import os
-
+import pyfolio as pf
     
 class MyStrategy(bt.Strategy):
     '''
@@ -94,11 +94,11 @@ class MyStrategy(bt.Strategy):
             # 买入卖出订单处理
             if order.status in [order.Completed]:
                 if order.isbuy():
-                    self.log('买入%s, 单价: %.2f, 买入总金额: %.2f, 手续费 %.2f,数量%.2f'%
+                    self.log('买入%s, 单价: %.2f, 总资产: %.2f, 手续费 %.2f,数量%.2f'%
                     ( 
                     order.p.data._name,
                      order.executed.price,
-                     order.executed.value *-1,
+                     self.broker.get_value(),
                      order.executed.comm,
                      order.executed.size))
 
@@ -156,7 +156,7 @@ cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='SP') #夏普
 cerebro.addanalyzer(bt.analyzers.AnnualReturn, _name='AR')#每年化收益率
 cerebro.addanalyzer(bt.analyzers.DrawDown, _name='DD')#回撤
 cerebro.addanalyzer(bt.analyzers.Returns, _name='RE') #收益率
-   
+cerebro.addanalyzer(bt.analyzers.PyFolio) #资金曲线分析
     
     
     
@@ -169,6 +169,8 @@ cerebro.broker.setcommission(0.0003)
 #回测-启动
 print('初始金额: %.2f' % cerebro.broker.getvalue())
 back = cerebro.run()
+
+
 #总份额，年化，回撤，夏普
 ratio_list=[[
     x.analyzers.SP.get_analysis()['sharperatio'],#夏普比率
@@ -178,12 +180,19 @@ ratio_list=[[
     for x in back]  #夏普
 ratio_df = pd.DataFrame(ratio_list,columns=['夏普','年化%','最大回撤','最大回撤周期'])
 print(ratio_df)
-    
 print('历年收益率：%s' %back[0].analyzers.AR.get_analysis())#每年年化收益率
 print('标准收益率：%s' %back[0].analyzers.RE.get_analysis()['rnorm100']) # 年化标准化回报以100%展示
 print('最终总市值: %.2f' % cerebro.broker.getvalue())
-cerebro.plot()
 
+
+#资金曲线
+pyfoliozer = back[0].analyzers.getbyname('pyfolio')
+returns,positions,transactions,gross_lev = pyfoliozer.get_pf_items()
+pf.create_full_tear_sheet(
+    returns,
+    positions = positions,
+    transactions = transactions
+)
     
     
     
