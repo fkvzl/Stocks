@@ -34,3 +34,18 @@ macd跟kdj要自己写，talib中默认前33数值为NA
 
 20211110
 利用continue解决空xls引起的脏数据
+
+20211129before
+利用len(df)筛选数据条数
+利用os读取解决本地记录真实性
+注释bt.indicators，plot恢复框架版，临时绕过除数为0问题
+使用self.getposition.size()函数解决无限卖出bug
+
+20211129
+优化逻辑：各股票各卖各的。使用dict，新建holday[d]字段登记每个股票的卖出bar
+优化前：19年 26%；20年 9%；夏普 
+优化后
+
+20211204
+实现各股票单独卖出逻辑。采用holday[d]跟len(self)的关联
+学习pyfolio

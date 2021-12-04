@@ -1,0 +1,4 @@
+头文件不带h
+iostream基础头带输入输出
+cout =print打印
+cint = scanf输入

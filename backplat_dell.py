@@ -42,9 +42,9 @@ class MyStrategy(bt.Strategy):
         #这里用了虚拟下标d，作用同唯一标识，有些地方用tscode
         #indx赋值,bt指标使用datas[i]处理
         self.inds=dict()
+        self.holDay=dict()
         for i,d in enumerate(self.datas):
             self.inds[d]=bt.indicators.SMA(d.close,period=self.p.min_period)
-
         #    bt.indicators.ExponentialMovingAverage(self.datas[i], period=self.p.min_period)
         #    bt.indicators.WeightedMovingAverage(self.datas[i], period=self.p.min_period).subplot = True
         #    bt.indicators.StochasticSlow(self.datas[i])
@@ -78,8 +78,9 @@ class MyStrategy(bt.Strategy):
 
             if d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
                 self.order=self.buy(data=d,size=(0.1*self.broker.getvalue()//d.close))
+                self.holDay[d]=len(self)
             elif vol>0:
-                if len(self)>=(self.bar_executed + self.params.exitbars):
+                if len(self)>=(self.holDay[d] + self.params.exitbars):
                     self.order=self.sell(data=d,size=self.getposition(d).size)        
         
         
@@ -180,9 +181,8 @@ print(ratio_df)
     
 print('历年收益率：%s' %back[0].analyzers.AR.get_analysis())#每年年化收益率
 print('标准收益率：%s' %back[0].analyzers.RE.get_analysis()['rnorm100']) # 年化标准化回报以100%展示
+print('最终总市值: %.2f' % cerebro.broker.getvalue())
 cerebro.plot()
-print('最终收益: %.2f' % cerebro.broker.getvalue())
-    
 
     
     
