@@ -82,3 +82,7 @@ jupyter画图失败 AttributeError: type object ‘object’ has no attribute 'd
 解决方案：升级pandas,numpy,python直接更新anaconda到最新
 %load_ext autoreload
 %autoreload 2
+
+20211207
+夏普=年化收益/标准差。比如2表示1份风险，2份收益
+卡玛=年化收益/最大回撤。越高越好，回撤小
