@@ -7,12 +7,11 @@ This is a temporary script file.
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-df_date = pd.read_excel('D:/tra_date.xlsx')
- 
-plt.figure()
-plt.subplots(figsize=(30,10))
-#fig, axs = plt.subplots(figsize=(100, 100))
-plt.plot(df_date.trade_date,df_date.up)
-
-plt.show()
-##主函数
+import pandas as pd
+df = pd.DataFrame({ 'A': ['A0', 'A1', 'A2', 'A3','A4'],
+                     'B': ['B0', 'B1', 'B2', 'B3','B4'],
+                     'C': ['C0', 'C1', 'C2', 'C3','C4'],
+                     'D': ['D0', 'D1', 'D2', 'D3','D4']})
+df.set_index('A', inplace=True)
+print(df)
+print(df.index.values)

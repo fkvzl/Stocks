@@ -6,7 +6,7 @@ Created on Sun Mar 28 10:23:10 2021
 """
 import tushare as ts
 from sqlalchemy import create_engine
-import pymysql
+# import pymysql
 import numpy as np
 import matplotlib.pyplot   as plt
 import pandas  as pd
@@ -116,4 +116,6 @@ def macdhist_300(days):
         except:
             print('不可用：',stock)
 
-macdhist_300(-30)
+# df = pro.daily(ts_code='000001.SH', start_date='20100101', end_date='20211031')
+df = pro.query('trade_cal', start_date='20100101', end_date='20211031',is_open='1')
+df.to_excel('C:/FK/local_stock/date.xlsx')

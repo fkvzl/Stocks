@@ -9,7 +9,16 @@ E-mail:fkvzl@qq.com
 主题：python笔记
 思路：
 
+
 """
+【重装anaconda】
+pip uninstall pyfolio
+y
+pip install git+https://github.com/quantopian/pyfolio
+
+pip install backtrader 
+pip install tushare
+
 【学习路线】
 1【ok】回测案例实现
 2【ing】第一个回测策略实现
@@ -50,3 +59,26 @@ macd跟kdj要自己写，talib中默认前33数值为NA
 实现各股票单独卖出逻辑。采用holday[d]跟len(self)的关联
 使用对象的__dict__方法打印该对象名下所有变量
 学习pyfolio
+pip uninstall pyfolio
+y
+pip install git+https://github.com/quantopian/pyfolio
+
+上证指数是 000001.SH 普通股票是000001.SZ
+._name 表示获取对象名字
+
+数据获取来源
+JData(聚宽数据）
+万矿-wind旗下的量化平台
+掘金量化
+
+20211205
+获取行索引 
+    df.index.values
+    d.datetime.date(0)  方法直接获取时间
+d.datetime.date(0)表示展示当前next下的line里的date，所以停盘的股票日期会一直停留在停盘日
+解决方案：停牌数据需要用股票的date跟指数的date比对，不一致就剔除循环
+
+jupyter画图失败 AttributeError: type object ‘object’ has no attribute 'dtype
+解决方案：升级pandas,numpy,python直接更新anaconda到最新
+%load_ext autoreload
+%autoreload 2

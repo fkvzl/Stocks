@@ -7,5 +7,5 @@ Created on Wed Aug 11 22:09:25 2021
 import pandas as pd
 import os
 file = 'C:/FK/local_stock/'
-fileList=sorted(os.listdir(file))
+fileList=os.listdir(file)
 print(fileList)

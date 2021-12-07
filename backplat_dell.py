@@ -8,6 +8,7 @@ from __future__ import (absolute_import, division, print_function,
 
 from backtrader import broker
 from backtrader.order import Order  # For datetime objects
+from backtrader import num2date
 import tushare as ts
 # Import the backtrader platformr
 import backtrader as bt
@@ -71,15 +72,20 @@ class MyStrategy(bt.Strategy):
         #放在最前面，因为多股需要遍历操作
         #持仓赋值
         
-        for i,d in enumerate(self.datas):
+        for d in self.datas[1:]:
             
             vol = self.getposition(d).size
             #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
-
-            if d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
+            curr_date = self.datas[0].datetime.date(0).strftime("%Y%m%d")
+            d_date = d.datetime.date(0).strftime("%Y%m%d")
+            if d_date<curr_date:
+                continue
+            elif d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
                 self.order=self.buy(data=d,size=(0.1*self.broker.getvalue()//d.close))
                 self.holDay[d]=len(self)
-            elif vol>0:
+                # self.log(f"{d.datetime.date(0)},{d._name},{self.getposition(data=d).size}")
+
+            if vol>0:
                 if len(self)>=(self.holDay[d] + self.params.exitbars):
                     self.order=self.sell(data=d,size=self.getposition(d).size)        
         
@@ -191,7 +197,7 @@ returns,positions,transactions,gross_lev = pyfoliozer.get_pf_items()
 pf.create_full_tear_sheet(
     returns,
     positions = positions,
-    transactions = transactions
+    transactions = transactions,
 )
     
     
