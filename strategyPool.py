@@ -4,18 +4,14 @@ Created on Sun Mar 28 10:23:10 2021
 
 @author: Administrator
 """
+import xcsc_tushare as ts1
 import tushare as ts
-from sqlalchemy import create_engine
-# import pymysql
-import numpy as np
-import matplotlib.pyplot   as plt
 import pandas  as pd
 import xlrd
 
-# ts.set_token('db359948bb4351fe9731151b3ad7925b240419250d16094af141acd5')
 # pro = ts.pro_api(env='prd')
 
-pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e') 
+pro = ts.pro_api('a5cec5a238e77dabe416e44b53bb9fd679aa3c00a148cd47e315ef8e')
 
 
 
@@ -105,17 +101,53 @@ def vr():
 390天最低kdj
 '''
 def macdhist_300(days):
-    for stock in getStocks(): #获取全量股票
+    for i in getStocks(): #获取全量股票
         try:
-            df = pro.daily(ts_code=stock)#遍历每天行情
+            df = pd.read_excel('C:/FK/local_stock/{i}.xlsx')
             df=df[::-1]  #倒序，同sort区别为sort为排序方式
             dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
             hist = hist.values[days:]   #days要负数
             if  (len(hist [ (hist >=-0.1) * (hist <= 0.07)]))>=22:
-                print(stock)
+                print(i)
         except:
-            print('不可用：',stock)
+            print('不可用：',i)
+'''
+macd死叉后10天内又金叉（dif穿dea）
+obv持续向上
+boll没上方压力性
+'''
 
-# df = pro.daily(ts_code='000001.SH', start_date='20100101', end_date='20211031')
-df = pro.query('trade_cal', start_date='20100101', end_date='20211031',is_open='1')
-df.to_excel('C:/FK/local_stock/date.xlsx')
+ts_codes_all = pd.read_excel('C:/FK/StocksInfo.xlsx')['ts_code'].tolist()
+ts_codes_all1 = ['605128.SH','605188.SH']
+ts_codes = [x for i,x in enumerate(ts_codes_all) if x.find('688')]
+t = []
+for i in ts_codes:
+    print(i)
+    ###数据源处理
+    df = pd.read_excel(f'C:/FK/local_stock/{i}.xlsx')
+    # 倒序，同sort区别为sort为排序方式,计算macd要上市日开始算起
+    df = df[::-1]
+    dif, dea, hist = myMACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
+    #获取近16一天的kd数据
+    df['K'] = dif[-12:]
+    df['D'] = dea[-12:]
+    kds=df['K']>df['D']
+    #shift表昨日 不能用未来数据。 false->true 金叉1  true->false死叉0
+    df_c = df.copy()
+    df_c['KDJ']='3'
+
+    # print(df)
+    df_c.loc[kds[(kds == True) & (kds.shift() == False)].index, 'KDJ'] = '1'
+    df_c.loc[kds[(kds == False) & (kds.shift() == True)].index, 'KDJ'] = '0'
+    df_c = df_c[-20:]
+    # a = df['KDJ'].value_counts()["0"],该方法存在坐标越界bug
+    # print(df_c)
+    a = list(df_c['KDJ']).count("0")  #死叉个数
+    b = list(df_c['KDJ']).count("1")  #金叉个数,因为首次必金叉所以》1
+    # print(a)
+    # print(b)
+    ###筛选出现一次死叉金叉股票
+    if(a==1 and b==2 ):
+        t.append(i)
+
+print(t)

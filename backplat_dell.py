@@ -14,10 +14,7 @@ import tushare as ts
 import backtrader as bt
 import backtrader.feeds as btfeeds
 import pandas as pd
-import matplotlib.pyplot as plt
-from backtrader_plotting import Bokeh
-from backtrader_plotting.schemes import Tradimo
-from tushare.pro.data_pro import FACT_LIST
+
 import os
 import pyfolio as pf
     
@@ -44,6 +41,7 @@ class MyStrategy(bt.Strategy):
         #indx赋值,bt指标使用datas[i]处理
         self.inds=dict()
         self.holDay=dict()
+
         for i,d in enumerate(self.datas):
             self.inds[d]=bt.indicators.SMA(d.close,period=self.p.min_period)
         #    bt.indicators.ExponentialMovingAverage(self.datas[i], period=self.p.min_period)
@@ -73,21 +71,18 @@ class MyStrategy(bt.Strategy):
         #持仓赋值
         
         for d in self.datas[1:]:
-            
-            vol = self.getposition(d).size
-            #触发条件：t-4日前高于21线，t-1低于21线，t突破21，t+1开盘价买入，5日后卖出
-            curr_date = self.datas[0].datetime.date(0).strftime("%Y%m%d")
-            d_date = d.datetime.date(0).strftime("%Y%m%d")
-            if d_date<curr_date:
-                continue
-            elif d.close[-4]>self.inds[d][-4] and d.close[-1]<self.inds[d][-1] and d.close[0]>self.inds[d][0]:
-                self.order=self.buy(data=d,size=(0.1*self.broker.getvalue()//d.close))
-                self.holDay[d]=len(self)
-                # self.log(f"{d.datetime.date(0)},{d._name},{self.getposition(data=d).size}")
+            #获取今日，昨日，前日，大前日价格
+            p0_close = d.close[0]
+            p1_close = d.close[-1]
+            p2_close = d.close[-2]
+            p3_close = d.close[-3]
 
-            if vol>0:
-                if len(self)>=(self.holDay[d] + self.params.exitbars):
-                    self.order=self.sell(data=d,size=self.getposition(d).size)        
+            #如果出现涨停，涨停，阴线，打印股票及日期
+            if ((p2_close> p3_close*1.1-0.02) and
+                (p1_close>p2_close*1.1-0.02) and
+                (p0_close<p1_close*.97)):
+                    self.log(f"{d.datetime.date(0)},{d._name}")
+
         
         
 
@@ -129,11 +124,11 @@ class MyStrategy(bt.Strategy):
 
 
  
-
+############################################以上为策略部分#######################
 cerebro = bt.Cerebro()
     
 #画图
-b = Bokeh(style='bar', plot_mode='single', scheme=Tradimo())
+# b = Bokeh(style='bar', plot_mode='single', scheme=Tradimo())
 fileRoot = 'C:/FK/local_stock/'
 fileList = sorted(os.listdir(fileRoot))
 pro = ts.pro_api('ebe4734e785004ada3e0f4e03da59a5dee8c7da0b7820ce5c50fb30e')
