@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Mar 28 10:23:10 2021
-
+选股
 @author: Administrator
 """
-import xcsc_tushare as ts1
 import tushare as ts
 import pandas  as pd
 import xlrd
-
+import tblib  as tl
 # pro = ts.pro_api(env='prd')
 
 pro = ts.pro_api('a5cec5a238e77dabe416e44b53bb9fd679aa3c00a148cd47e315ef8e')
@@ -99,6 +98,9 @@ def vr():
 1创业板300+零轴up+零轴down+下限
 2满足macd多
 390天最低kdj
+
+问题：
+1macd值跨度大，无参考性
 '''
 def macdhist_300(days):
     for i in getStocks(): #获取全量股票
@@ -111,15 +113,35 @@ def macdhist_300(days):
                 print(i)
         except:
             print('不可用：',i)
+
+#全板块            
+def macdhist_v1():
+    df = pd.read_excel('C:/FK/ts_codes.xlsx')
+    codes = df.ts_code.to_list()
+    for i in codes:
+        df = pd.read_excel('C:/FK/local_stock/%s.xlsx' %i)       
+        df=df[::-1]  #倒序，同sort区别为sort为排序方式
+        dif,dea,hist=myMACD(df['close'],fastperiod=12, slowperiod=26, signalperiod=9)
+        hist = hist.values[-40:]   #days要负数
+        if  (len(hist [ (hist >=-0.04) * (hist <= 0.04)]))>=22:
+                print(i)
+        
+real = tl.TRIX(close, timeperiod=30)
+         
+            
+            
+            
+            
+            
 '''
 macd死叉后10天内又金叉（dif穿dea）
 obv持续向上
 boll没上方压力性
-'''
 
-ts_codes_all = pd.read_excel('C:/FK/StocksInfo.xlsx')['ts_code'].tolist()
-ts_codes_all1 = ['605128.SH','605188.SH']
-ts_codes = [x for i,x in enumerate(ts_codes_all) if x.find('688')]
+
+df_codes = pd.read_excel('C:/FK/StocksInfo.xlsx')
+#ts_codes = [x for i,x in enumerate(ts_codes_all) if x.find('688')] #find找到返回0，其他-1，if的-1是true
+ts_codes = df_codes[df_codes['ts_code'].str.contains('^300')].ts_code.values.tolist()
 t = []
 for i in ts_codes:
     print(i)
@@ -129,8 +151,8 @@ for i in ts_codes:
     df = df[::-1]
     dif, dea, hist = myMACD(df['close'], fastperiod=12, slowperiod=26, signalperiod=9)
     #获取近16一天的kd数据
-    df['K'] = dif[-12:]
-    df['D'] = dea[-12:]
+    df['K'] = dif[-7:]
+    df['D'] = dea[-7:]
     kds=df['K']>df['D']
     #shift表昨日 不能用未来数据。 false->true 金叉1  true->false死叉0
     df_c = df.copy()
@@ -146,8 +168,10 @@ for i in ts_codes:
     b = list(df_c['KDJ']).count("1")  #金叉个数,因为首次必金叉所以》1
     # print(a)
     # print(b)
+    #近10天开盘不能跌破20均线
     ###筛选出现一次死叉金叉股票
     if(a==1 and b==2 ):
         t.append(i)
 
 print(t)
+'''

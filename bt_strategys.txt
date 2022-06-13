@@ -1,4 +1,4 @@
-【跳崖拉升】
+【跳崖拉升】——无效
 逻辑：出现调整跌破21均线，4日后又站上21均线，5日后卖出
 for i,d in enumerate(self.datas):
             vol = self.getposition(d)
@@ -11,6 +11,11 @@ for i,d in enumerate(self.datas):
                     self.order=self.sell(data=d,size=self.getposition(d).size)
 
 
+
+【奇迹】
+【底部启动】
+近
+【5日线趋势，回调入，3日止损或者跌破5日止损】
 
 【布林线启动】
 逻辑：

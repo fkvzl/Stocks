@@ -70,18 +70,9 @@ class MyStrategy(bt.Strategy):
         #放在最前面，因为多股需要遍历操作
         #持仓赋值
         
-        for d in self.datas[1:]:
-            #获取今日，昨日，前日，大前日价格
-            p0_close = d.close[0]
-            p1_close = d.close[-1]
-            p2_close = d.close[-2]
-            p3_close = d.close[-3]
-
-            #如果出现涨停，涨停，阴线，打印股票及日期
-            if ((p2_close> p3_close*1.1-0.02) and
-                (p1_close>p2_close*1.1-0.02) and
-                (p0_close<p1_close*.97)):
-                    self.log(f"{d.datetime.date(0)},{d._name}")
+        if vol>0:
+            if len(self)>=(self.holDay[d] + self.params.exitbars):
+            self.order=self.sell(data=d,size=self.getposition(d).size)   
 
         
         

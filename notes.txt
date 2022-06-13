@@ -8,9 +8,33 @@ E-mail:fkvzl@qq.com
 
 主题：python笔记
 思路：
-
-
 """
+
+
+
+【框架】
+行情既视感：信息来源，协助判断人工选股，跟自己个体操作有用
+策略验证：专业拓展，属于核心圈子专业技能
+    1bq跟聚宽效率太慢
+    2本地数据为王
+    3目的：利用tushare行情数据载入本地实现策略的积累
+搭建系统：不需要在搭建上精通，用一套backtrader即可
+
+案例1：双均线，海龟
+案例2：macd
+
+
+步骤1：择股：买入提示。在strategypool里实现、验证
+步骤2：3日后卖出。在backtrader里实现
+*主攻：1策略快速实现（基本功）
+主攻：2策略的发起与跟进优化
+
+
+
+
+
+
+
 【重装anaconda】
 pip uninstall pyfolio
 y
@@ -86,3 +110,7 @@ jupyter画图失败 AttributeError: type object ‘object’ has no attribute 'd
 20211207
 夏普=年化收益/标准差。比如2表示1份风险，2份收益
 卡玛=年化收益/最大回撤。越高越好，回撤小
+
+20220227
+回测才需要backtrader，选股可以用python自己的框架
+
